@@ -2,6 +2,7 @@ package enitiy;
 
 import main.KeyHandler;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -14,6 +15,7 @@ public class Player extends Entity {
     KeyHandler keyH;
     public final int screenX;
     public final int screenY;
+    public int hasKey = 0;
 
     public Player(GamePanel gp, KeyHandler keyH) {
         this.gp = gp;
@@ -21,7 +23,13 @@ public class Player extends Entity {
 
         screenX = gp.ScreenWidth / 2 - (gp.tileSize / 2);
         screenY = gp.ScrenHeight / 2 - (gp.tileSize / 2);
-
+        soildArea = new Rectangle();
+        soildArea.x = 8;
+        soildArea.y = 16;
+        soildArea.width = 32;
+        soildArea.height = 32;
+        solidAreaDefaultX = soildArea.x;
+        solidAreaDefaultY = soildArea.y;
         setDefaultValues();
         getPlayerImage();
     }
@@ -54,19 +62,40 @@ public class Player extends Entity {
                 || keyH.rightPressed == true) {
             if (keyH.upPressed == true) {
                 direction = "up";
-                worldY -= speed;
+
             } else if (keyH.downPressed == true) {
                 direction = "down";
-                worldY += speed;
+
             } else if (keyH.leftPressed == true) {
                 direction = "left";
-                worldX -= speed;
+
             } else if (keyH.rightPressed == true) {
                 direction = "right";
-                worldX += speed;
+            }
+
+            collisionOn = false;
+            gp.cChecker.checkTile(this);
+
+            int objIndex = gp.cChecker.checkObject(this, true);
+            pickUpObject(objIndex);
+            if (collisionOn == false) {
+                switch (direction) {
+                    case "up":
+                        worldY -= speed;
+                        break;
+                    case "down":
+                        worldY += speed;
+                        break;
+                    case "left":
+                        worldX -= speed;
+                        break;
+                    case "right":
+                        worldX += speed;
+                        break;
+                }
             }
             spriteCounter++;
-            if (spriteCounter > 10) {
+            if (spriteCounter > 12) {
                 if (spriteNum == 1) {
                     spriteNum = 2;
                 } else if (spriteNum == 2) {
@@ -76,6 +105,26 @@ public class Player extends Entity {
             }
         }
 
+    }
+
+    public void pickUpObject(int i) {
+        if (i != 999) {
+            String objectName = gp.obj[i].name;
+            switch (objectName) {
+                case "Key":
+                    hasKey++;
+                    gp.obj[i] = null;
+                    System.out.println("Key" + hasKey);
+                    break;
+
+                case " Door":
+                    if (hasKey > 0) {
+                        gp.obj[i] = null;
+                        hasKey--;
+                    }
+                    break;
+            }
+        }
     }
 
     public void draw(Graphics2D g2) {

@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import javax.swing.JPanel;
 
 import enitiy.Player;
+import object.SuperObject;
 import tile.TileManager;
 
 public class GamePanel extends JPanel implements Runnable {
@@ -25,15 +26,17 @@ public class GamePanel extends JPanel implements Runnable {
     public final int maxWorldCol = 50;
     public final int maxWorldRow = 50;
     public final int worldWidth = tileSize * maxWorldCol;
-    public final int worldHeight = tileSize * maxScreenRow;
+    public final int worldHeight = tileSize * maxWorldRow;
 
     // FPS
     int FPS = 60;
     TileManager tileM = new TileManager(this);
     KeyHandler keyH = new KeyHandler();
     Thread gameThread;
-
+    public CollisionChecker cChecker = new CollisionChecker(this);
+    public AssetSetter aSetter = new AssetSetter(this);
     public Player player = new Player(this, keyH);
+    public SuperObject obj[] = new SuperObject[10];
     // set player position
     int playerX = 100;
     int playerY = 100;
@@ -45,6 +48,10 @@ public class GamePanel extends JPanel implements Runnable {
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
         this.setFocusable(true);
+    }
+
+    public void setupGame() {
+        aSetter.setObject();
     }
 
     public void startGameThread() {
@@ -92,6 +99,12 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         tileM.draw(g2);
+        // object
+        for (int i = 0; i < obj.length; i++) {
+            if (obj[i] != null) {
+                obj[i].draw(g2, this);
+            }
+        }
         player.draw(g2);
         g2.dispose();
     }
